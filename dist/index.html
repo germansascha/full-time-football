@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Live football tables, complete season form, fixtures, cup results and team records for England, Germany, Spain and Europe."
+    />
+    <meta name="theme-color" content="#09110f" />
+    <title>Full Time — Football form, without the noise</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2309110f'/%3E%3Cpath d='M17 16h31v10H29v7h16v10H29v15H17z' fill='%23d8ff45'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to table</a>
+
+    <div class="site-shell">
+      <header class="topbar">
+        <button class="brand" type="button" data-action="home" aria-label="Full Time home">
+          <span class="brand-mark" aria-hidden="true">FT</span>
+          <span class="brand-copy">
+            <strong>Full Time</strong>
+            <small>Europe’s essential scorecard</small>
+          </span>
+        </button>
+
+        <div class="topbar-meta">
+          <span class="data-state" id="data-state" aria-live="polite">
+            <i aria-hidden="true"></i>
+            Connecting
+          </span>
+          <button class="icon-button" id="refresh-button" type="button" aria-label="Refresh live data" title="Refresh live data">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20 7v5h-5M4 17v-5h5M6.1 9a7 7 0 0 1 11.4-2.5L20 9M4 15l2.5 2.5A7 7 0 0 0 18 15" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <nav class="competition-rail" aria-label="Competitions">
+        <button class="competition-tab is-active" type="button" data-competition="eng.1">
+          <span class="tab-monogram tab-eng">PL</span>
+          <span>Premier League</span>
+        </button>
+        <button class="competition-tab" type="button" data-competition="ger.1">
+          <span class="tab-monogram tab-ger">BL</span>
+          <span>Bundesliga</span>
+        </button>
+        <button class="competition-tab" type="button" data-competition="esp.1">
+          <span class="tab-monogram tab-esp">LL</span>
+          <span>La Liga</span>
+        </button>
+        <span class="rail-divider" aria-hidden="true"></span>
+        <button class="competition-tab" type="button" data-competition="uefa.champions">
+          <span class="tab-monogram tab-ucl">CL</span>
+          <span>Champions League</span>
+        </button>
+        <button class="competition-tab" type="button" data-competition="eng.fa">
+          <span class="tab-monogram tab-fa">FA</span>
+          <span>FA Cup</span>
+        </button>
+        <button class="competition-tab" type="button" data-competition="eng.league_cup">
+          <span class="tab-monogram tab-efl">LC</span>
+          <span>Carabao Cup</span>
+        </button>
+        <button class="competition-tab" type="button" data-competition="ger.dfb_pokal">
+          <span class="tab-monogram tab-dfb">DFB</span>
+          <span>DFB-Pokal</span>
+        </button>
+      </nav>
+
+      <main id="main-content">
+        <section class="competition-head" aria-labelledby="competition-title">
+          <div>
+            <div class="eyebrow-row">
+              <span id="competition-country">England</span>
+              <span aria-hidden="true">/</span>
+              <span id="season-label">2026–27</span>
+            </div>
+            <h1 id="competition-title">Premier League</h1>
+          </div>
+          <div class="head-actions">
+            <div class="segmented-control" id="view-switcher" aria-label="View">
+              <button class="is-active" type="button" data-view="table">Table</button>
+              <button type="button" data-view="matches">Matches</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="summary-strip" id="summary-strip" aria-label="Competition summary">
+          <article>
+            <span>Leader</span>
+            <strong id="summary-leader">—</strong>
+          </article>
+          <article>
+            <span>Matches played</span>
+            <strong id="summary-played">—</strong>
+          </article>
+          <article>
+            <span>Goals</span>
+            <strong id="summary-goals">—</strong>
+          </article>
+          <article>
+            <span>Next fixture</span>
+            <strong id="summary-next">—</strong>
+          </article>
+        </section>
+
+        <section class="surface table-surface" id="table-view" aria-label="League standings">
+          <div class="surface-toolbar">
+            <div>
+              <p class="surface-kicker">Standings</p>
+              <h2>Season table</h2>
+            </div>
+            <div class="form-toggle" aria-label="Form range">
+              <span>Form</span>
+              <div class="segmented-control compact">
+                <button class="is-active" type="button" data-form-range="five">Last 5</button>
+                <button type="button" data-form-range="season">Full season</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="standings-table">
+              <thead>
+                <tr>
+                  <th scope="col" class="rank-column">#</th>
+                  <th scope="col" class="club-column">Club</th>
+                  <th scope="col"><abbr title="Played">P</abbr></th>
+                  <th scope="col"><abbr title="Won">W</abbr></th>
+                  <th scope="col"><abbr title="Drawn">D</abbr></th>
+                  <th scope="col"><abbr title="Lost">L</abbr></th>
+                  <th scope="col"><abbr title="Goals for">GF</abbr></th>
+                  <th scope="col"><abbr title="Goals against">GA</abbr></th>
+                  <th scope="col"><abbr title="Goal difference">GD</abbr></th>
+                  <th scope="col" class="points-column"><abbr title="Points">Pts</abbr></th>
+                  <th scope="col" class="form-column">Form</th>
+                </tr>
+              </thead>
+              <tbody id="standings-body"></tbody>
+            </table>
+          </div>
+
+          <div class="table-key" aria-label="Table qualification key">
+            <span><i class="key-champions"></i>Champions League</span>
+            <span><i class="key-europa"></i>Europa / Conference</span>
+            <span><i class="key-relegation"></i>Relegation</span>
+            <span class="table-hint">Select any club for titles and leading scorers</span>
+          </div>
+        </section>
+
+        <section class="surface matches-surface is-hidden" id="matches-view" aria-label="Fixtures and results">
+          <div class="surface-toolbar">
+            <div>
+              <p class="surface-kicker">Scoreboard</p>
+              <h2 id="matches-title">Fixtures & results</h2>
+            </div>
+            <div class="match-filter" aria-label="Match filter">
+              <button class="is-active" type="button" data-match-filter="all">All</button>
+              <button type="button" data-match-filter="results">Results</button>
+              <button type="button" data-match-filter="upcoming">Upcoming</button>
+            </div>
+          </div>
+          <div class="match-list" id="match-list"></div>
+        </section>
+
+        <section class="load-state is-hidden" id="loading-state" aria-live="polite">
+          <div class="loader-ball" aria-hidden="true"></div>
+          <strong>Loading the season…</strong>
+          <span>Pulling tables and every result.</span>
+        </section>
+
+        <section class="error-state is-hidden" id="error-state" aria-live="polite">
+          <strong>Live feed is taking a breather.</strong>
+          <span>The sample season is on screen. Try refreshing in a moment.</span>
+          <button type="button" data-action="retry">Try again</button>
+        </section>
+      </main>
+
+      <footer>
+        <span>Full Time</span>
+        <p>Football data supplied by ESPN’s public feeds. Independent and unofficial.</p>
+      </footer>
+    </div>
+
+    <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+    <aside class="team-drawer" id="team-drawer" aria-labelledby="drawer-team-name" aria-hidden="true">
+      <button class="drawer-close" type="button" data-action="close-drawer" aria-label="Close team details">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+      </button>
+      <div class="drawer-hero">
+        <img id="drawer-crest" alt="" />
+        <div>
+          <span id="drawer-country">England</span>
+          <h2 id="drawer-team-name">Club</h2>
+          <p id="drawer-record">0 wins · 0 draws · 0 losses</p>
+        </div>
+      </div>
+
+      <div class="drawer-stat-grid">
+        <article>
+          <span>Top-flight titles</span>
+          <strong id="drawer-league-titles">—</strong>
+          <small id="drawer-title-note">Domestic championships</small>
+        </article>
+        <article>
+          <span id="drawer-competition-label">Competition titles</span>
+          <strong id="drawer-competition-titles">—</strong>
+          <small id="drawer-competition-note">All time</small>
+        </article>
+      </div>
+
+      <section class="drawer-section">
+        <div class="drawer-section-heading">
+          <div>
+            <span>Current season</span>
+            <h3>Top scorers</h3>
+          </div>
+          <span class="season-chip" id="drawer-season">2026–27</span>
+        </div>
+        <ol class="scorer-list" id="scorer-list"></ol>
+      </section>
+
+      <section class="drawer-section">
+        <div class="drawer-section-heading">
+          <div>
+            <span>Every league result</span>
+            <h3>Season form</h3>
+          </div>
+          <span id="drawer-points">0 pts</span>
+        </div>
+        <div class="drawer-form" id="drawer-form"></div>
+      </section>
+    </aside>
+
+    <noscript>This site needs JavaScript to load live football data.</noscript>
+    <script src="./data.js"></script>
+    <script src="./api.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
