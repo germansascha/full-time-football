@@ -415,7 +415,7 @@
     state.lastFocus = trigger || document.activeElement;
     dom.drawerName.textContent = team.name;
     dom.drawerCountry.textContent = config.country;
-    dom.drawerRecord.textContent = `${record.wins} wins · ${record.draws} draws · ${record.losses} losses`;
+    dom.drawerRecord.textContent = `${record.played} matches played · ${record.wins} wins · ${record.draws} draws · ${record.losses} losses`;
     dom.drawerLeagueTitles.textContent = titleDisplay(domesticCount);
     dom.drawerTitleNote.textContent = domesticCount === null ? "Historic count not yet catalogued" : "National top-flight championships";
     dom.drawerCompetitionLabel.textContent = config.kind === "league" ? `${config.name} lineage` : `${config.name} titles`;
