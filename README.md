@@ -22,17 +22,19 @@ Historic title counts are curated locally through the end of the 2025/26 season.
 
 1. Create a new GitHub repository.
 2. Add this project's files and push them to the `main` branch.
-3. Open **Settings → Pages** and choose **GitHub Actions** as the source.
-4. The included workflow publishes the `dist` folder automatically.
+3. Open **Settings → Pages** and choose **Deploy from a branch** as the source.
+4. Select the **main** branch and **/(root)** folder, then click **Save**.
+
+GitHub Pages publishes updates automatically when changes are pushed to `main`. No custom deployment workflow is needed.
 
 The site will then be available at `https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/`.
 
 ## Run locally
 
-Serve the `dist` folder with any static web server. For example:
+Serve the repository root with any static web server. For example:
 
 ```bash
-python3 -m http.server 8000 --directory dist
+python3 -m http.server 8000
 ```
 
 Then open `http://localhost:8000`.
@@ -40,13 +42,11 @@ Then open `http://localhost:8000`.
 ## Project structure
 
 ```text
-dist/
   index.html   Page structure
   styles.css   Responsive visual system
   data.js      Competitions, fallback data and historic titles
   api.js       ESPN data adapter and form/scorer calculations
   app.js       Rendering and interactions
-.github/workflows/deploy-pages.yml
 ```
 
 This is an independent, unofficial project and is not affiliated with ESPN, the leagues, competitions or clubs shown.
