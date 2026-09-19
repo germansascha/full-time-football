@@ -29,7 +29,7 @@
       });
       if (!response.ok) throw new Error(`Football feed returned ${response.status}`);
       const data = await response.json();
-      if (Number(data.code) >= 400 || data.status === "error") {
+      if (data.error || Number(data.code) >= 400 || data.status === "error") {
         throw new Error(data.message || "Football feed returned an error");
       }
       cache.set(url, data);
@@ -221,16 +221,18 @@
 
   async function scorersFromLeaders(slug, year, team) {
     try {
-      const url = `${CORE_BASE}/${encodeURIComponent(slug)}/seasons/${year}/leaders?limit=100`;
+      const schedule = await request(`${SITE_BASE}/site/v2/sports/soccer/${encodeURIComponent(slug)}/teams/${encodeURIComponent(team.id)}/schedule?season=${year}`);
+      if (Number(schedule.season?.year) !== year || !schedule.season?.type) throw new Error("Season unavailable");
+      const url = `${CORE_BASE}/${encodeURIComponent(slug)}/seasons/${year}/types/${schedule.season.type}/teams/${encodeURIComponent(team.id)}/leaders`;
       const payload = await request(url, { timeout: 9000 });
       const categories = collectLeaderCategories(payload);
-      const goalsCategory = categories.find((category) => /goal/i.test(`${category.name || ""} ${category.displayName || ""}`));
-      if (!goalsCategory) return [];
+      const goalsCategory = categories.find((category) => category.name === "goalsLeaders" || category.name === "goals");
+      if (!goalsCategory) throw new Error("Goal totals unavailable");
       const leaders = goalsCategory.leaders || goalsCategory.entries || goalsCategory.items || [];
       const matching = leaders.filter((leader) => {
         const leaderTeamId = leader.team?.id || idFromRef(leader.team?.$ref);
-        return leaderTeamId && String(leaderTeamId) === String(team.id);
-      }).slice(0, 3);
+        return (!leaderTeamId || String(leaderTeamId) === String(team.id)) && Number(leader.value) > 0;
+      }).sort((a, b) => Number(b.value) - Number(a.value)).slice(0, 3);
 
       return Promise.all(matching.map(async (leader) => {
         let athlete = leader.athlete || leader.player || {};
@@ -239,24 +241,28 @@
         }
         return {
           name: athlete.displayName || athlete.fullName || athlete.shortName || "Unknown scorer",
-          goals: Number(leader.value ?? leader.displayValue ?? 0),
+          goals: Number(leader.value),
         };
       }));
-    } catch (_error) {
-      return [];
+    } catch (error) {
+      throw error;
     }
   }
 
   async function fillMissingResults(slug, year, table, matches, bypassCache) {
     const byId = new Map(matches.map((match) => [match.id, match]));
-    const missing = table.filter((row) => row.formIncomplete);
+    const needsFixtures = !matches.some((match) => !match.completed);
+    const missing = table.filter((row) => row.formIncomplete || needsFixtures);
     let cursor = 0;
     await Promise.all(Array.from({ length: Math.min(6, missing.length) }, async () => {
       while (cursor < missing.length) {
         const row = missing[cursor++];
-        try {
-          const url = `${SITE_BASE}/site/v2/sports/soccer/${encodeURIComponent(slug)}/teams/${encodeURIComponent(row.team.id)}/schedule?season=${year}`;
-          const payload = await request(url, { bypassCache });
+        const baseUrl = `${SITE_BASE}/site/v2/sports/soccer/${encodeURIComponent(slug)}/teams/${encodeURIComponent(row.team.id)}/schedule?season=${year}`;
+        const urls = [row.formIncomplete ? baseUrl : null, needsFixtures ? `${baseUrl}&fixture=true` : null].filter(Boolean);
+        const responses = await Promise.allSettled(urls.map((url) => request(url, { bypassCache })));
+        for (const response of responses) {
+          if (response.status !== "fulfilled") continue;
+          const payload = response.value;
           if (payload.season?.year && Number(payload.season.year) !== year) continue;
           const events = (payload.events || []).filter((event) =>
             !event.season?.year || Number(event.season.year) === year);
@@ -264,8 +270,6 @@
             // Preserve scoreboard goal details when both feeds contain a match.
             if (!byId.has(match.id)) byId.set(match.id, match);
           });
-        } catch (_error) {
-          // Keep verified results; the row reports incomplete history explicitly.
         }
       }
     }));
@@ -298,7 +302,7 @@
 
     if (!table.length && !matches.length) throw new Error("No competition data returned");
     addFormFromMatches(table, matches);
-    if (table.some((row) => row.formIncomplete)) {
+    if (table.some((row) => row.formIncomplete) || (table.length && !matches.some((match) => !match.completed))) {
       matches = await fillMissingResults(slug, year, table, matches, bypassCache);
       addFormFromMatches(table, matches);
     }

@@ -441,25 +441,28 @@
   }
 
   async function loadTeamScorers(team, record) {
-    let scorers = api.scorersFromMatches(state.dataset.matches || [], team);
-    if (!scorers.length && state.dataset.source === "demo") scorers = record.demoScorers || [];
-    if (scorers.length < 3 && state.dataset.source === "live") {
-      const leaders = await api.scorersFromLeaders(state.competition, state.dataset.year, team);
-      const merged = new Map(scorers.map((scorer) => [scorer.name, scorer]));
-      leaders.forEach((scorer) => merged.set(scorer.name, scorer));
-      scorers = [...merged.values()].sort((a, b) => b.goals - a.goals).slice(0, 3);
+    const slug = state.competition;
+    const year = state.dataset.year;
+    const source = state.dataset.source;
+    let scorers = [];
+    let failed = false;
+    try {
+      scorers = source === "demo" ? (record.demoScorers || []) : await api.scorersFromLeaders(slug, year, team);
+    } catch (_error) {
+      failed = true;
     }
-    if (!state.selectedTeam || String(state.selectedTeam.id) !== String(team.id)) return;
-
-    dom.scorerList.innerHTML = scorers.length
-      ? scorers.slice(0, 3).map((scorer) => `
+    if (!state.selectedTeam || String(state.selectedTeam.id) !== String(team.id) || state.competition !== slug) return;
+    const scope = escapeHtml(competitions[slug].name);
+    dom.scorerList.innerHTML = failed
+      ? `<li class="scorer-empty">Season goal totals could not be loaded. Close and reopen this club to retry.</li>`
+      : scorers.length
+        ? scorers.map((scorer) => `
           <li>
             <span class="scorer-name">${escapeHtml(scorer.name)}</span>
-            <span class="scorer-goals">${Number(scorer.goals) || 0} goals</span>
-          </li>`).join("")
-      : `<li class="scorer-empty">Goal-event detail is not available for this club yet.</li>`;
+            <span class="scorer-goals">${Number(scorer.goals)} goals</span>
+          </li>`).join("") + `<li class="scorer-empty">${scope} · ${escapeHtml(api.seasonLabel(year))} season totals</li>`
+        : `<li class="scorer-empty">No goalscorers recorded in ${scope} this season.</li>`;
   }
-
   function closeDrawer() {
     dom.drawer.classList.remove("is-open");
     dom.drawerBackdrop.classList.remove("is-open");
