@@ -29,6 +29,9 @@
       });
       if (!response.ok) throw new Error(`Football feed returned ${response.status}`);
       const data = await response.json();
+      if (Number(data.code) >= 400 || data.status === "error") {
+        throw new Error(data.message || "Football feed returned an error");
+      }
       cache.set(url, data);
       return data;
     } finally {
@@ -89,8 +92,8 @@
       const goalDifference = statValue(stats, ["pointDifferential", "goalDifference", "GD"], goalsFor - goalsAgainst);
       const points = statValue(stats, ["points", "PTS"], wins * 3 + draws);
       const rank = statValue(stats, ["rank", "RANK"], rows.length + 1);
-      const formText = statText(stats, ["streak", "form"], "");
-      const form = formText.match(/[WDL]/gi)?.map((result) => result.toUpperCase()) || [];
+      // A standings streak is not a chronological match history.
+      const form = [];
 
       rows.push({
         rank,
@@ -169,7 +172,8 @@
         const other = isHome ? match.awayScore : match.homeScore;
         form.push(own === other ? "D" : own > other ? "W" : "L");
       });
-      if (form.length) row.form = form;
+      row.form = form;
+      row.formIncomplete = form.length < row.stats.played;
     });
     return table;
   }
@@ -243,6 +247,31 @@
     }
   }
 
+  async function fillMissingResults(slug, year, table, matches, bypassCache) {
+    const byId = new Map(matches.map((match) => [match.id, match]));
+    const missing = table.filter((row) => row.formIncomplete);
+    let cursor = 0;
+    await Promise.all(Array.from({ length: Math.min(6, missing.length) }, async () => {
+      while (cursor < missing.length) {
+        const row = missing[cursor++];
+        try {
+          const url = `${SITE_BASE}/site/v2/sports/soccer/${encodeURIComponent(slug)}/teams/${encodeURIComponent(row.team.id)}/schedule?season=${year}`;
+          const payload = await request(url, { bypassCache });
+          if (payload.season?.year && Number(payload.season.year) !== year) continue;
+          const events = (payload.events || []).filter((event) =>
+            !event.season?.year || Number(event.season.year) === year);
+          parseEvents({ events }).forEach((match) => {
+            // Preserve scoreboard goal details when both feeds contain a match.
+            if (!byId.has(match.id)) byId.set(match.id, match);
+          });
+        } catch (_error) {
+          // Keep verified results; the row reports incomplete history explicitly.
+        }
+      }
+    }));
+    return [...byId.values()];
+  }
+
   async function getCompetition(slug, { bypassCache = false } = {}) {
     const year = seasonYear();
     const config = window.FT_DATA.competitions[slug];
@@ -263,12 +292,16 @@
     const table = standingsResult.status === "fulfilled" && standingsResult.value
       ? parseStandings(standingsResult.value)
       : [];
-    const matches = matchesResult.status === "fulfilled"
+    let matches = matchesResult.status === "fulfilled"
       ? parseEvents(matchesResult.value)
       : [];
 
     if (!table.length && !matches.length) throw new Error("No competition data returned");
     addFormFromMatches(table, matches);
+    if (table.some((row) => row.formIncomplete)) {
+      matches = await fillMissingResults(slug, year, table, matches, bypassCache);
+      addFormFromMatches(table, matches);
+    }
 
     return {
       slug,
@@ -277,7 +310,7 @@
       table,
       matches,
       source: "live",
-      partial: standingsResult.status === "rejected" || matchesResult.status === "rejected",
+      partial: standingsResult.status === "rejected" || table.some((row) => row.formIncomplete) || (!table.length && matchesResult.status === "rejected"),
     };
   }
 

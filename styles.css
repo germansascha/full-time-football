@@ -566,9 +566,15 @@ tr.zone-relegation .rank-cell::before { background: var(--red); }
 }
 
 .form-run.is-season {
-  max-width: min(36vw, 430px);
-  overflow: hidden;
-  mask-image: linear-gradient(to right, #000 calc(100% - 25px), transparent);
+  min-width: 180px;
+  max-width: 430px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+}
+
+.no-form, .form-note {
+  color: var(--muted);
+  font-size: 0.7rem;
 }
 
 .result-mark {

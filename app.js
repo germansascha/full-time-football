@@ -179,7 +179,7 @@
           <td>${stats.goalsAgainst}</td>
           <td>${gd}</td>
           <td class="points-cell">${stats.points}</td>
-          <td class="form-cell"><div class="${formClass}">${resultMarks(row.form || [], state.formRange)}</div></td>
+          <td class="form-cell"><div class="${formClass}">${row.form?.length ? resultMarks(row.form, state.formRange) : `<span class="no-form">${stats.played ? "Results unavailable" : "No matches yet"}</span>`}</div>${row.formIncomplete && row.form?.length ? `<small class="form-note">${row.form.length} of ${stats.played} results available</small>` : ""}</td>
         </tr>`;
     }).join("");
 
